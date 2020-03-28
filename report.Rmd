@@ -1,0 +1,202 @@
+---
+title: "Approximation of the Distribution in R Markdown"
+author: "Linda1103"
+date: "2020/3/24"
+output:
+  html_document: default
+  pdf_document:
+    latex_engine: xelatex
+fontsize: 12pt
+keywords: Monte Carlo methods,R Markdown,bookdown
+documentclass: article
+papersize: letter
+abstract: The report represent the approximation of the distribution function of $N(0,1)$ by the Monte Carlo methods.In addition,it involes how to input math fomulas ,form the table and draw theplots by R Markdown and bookdown.
+---
+
+# 1 Introduction
+
+  As we all know,correctly writting basic syntax of R Markdown is the key of finishing report.Therefore,I studyed some skills from & laquo A Data Science Lab Project Template in R Markdown & laquo.
+  The rest of report includes three sections as follow:math equations,experiment results and conclusions.
+  
+
+# 2 Math equations
+
+  approximation of the distribution function of  N(0,1)
+\begin（equation）
+$$\Phi(t)=\int_{-\infty}^t\frac{1}{\sqrt{2\pi}}{\rm e}^{\frac{-y^2}{2}}\,{\rm d}y$$
+\label{eq：N（0,1）}
+\end{equation}
+Monte Carlo methods:
+\begin（equation）
+$$\hat\Phi(t)={\frac{1}{n}}\sum_{i=1}^{n}I({X_i}\leq t),$$
+\label{eq:Monte Carlo methods}
+\end{equation}
+## Where $X_i$ are a random sample from $N（0,1）$and $I()$ is the indicator function.
+
+# 3 Experiment results
+
+  I carryied out the experiment with  the approximation at $n\in{\{10^2,10^3,10^4}\}$ at $t\in{\{0.0,0.67,0.84,1.28,1.65,2.32,2.58,3.09,3.72}\}$ to form a table.In addition,The table include the true value for comparison.The specific experiment procedure code is as follow.
+
+```{r norm,echo = T }
+n=c(100,1000,10000)
+t=c(0.0,0.67,0.84,1.28,1.65,2.32,2.58,3.09,3.72 )
+p=matrix(data=NA,nrow=3,ncol=9)
+#填充矩阵元素
+#a=0
+for(i in 1:3)
+  for(j in 1:9)
+   for (k in 1:100) {
+     #a=a+1
+     num=rnorm(n[i],mean=0,sd=1)#行元素服从高斯分布
+     p[i,j]=mean(num<t[j])
+     #print(a)
+  }
+rownames(p)<-n#改变矩阵行名
+colnames(p)<-t
+pcycle=array(0,dim=c(9,3,100))
+#真实值
+true_value<-c(pnorm(0),pnorm(0.67),pnorm(0.84),pnorm(1.28),pnorm(1.65),
+           pnorm(2.32),pnorm(2.58),pnorm(3.09),pnorm(3.72))
+p<-rbind(p,true_value)#合并P和true_value两行
+p<-round(p,digits=9)
+
+library(knitr)
+library(magrittr)
+library(kableExtra)
+kable(p, booktabs=TRUE, caption='(norm_table)') %>%
+  kable_styling("responsive",full_width = F,fixed_thead = T) %>% 
+  row_spec(0,bold=T,color="blue")
+  
+ 
+```
+ 
+   In addition, I repeat the experiment 100 times. Draw box plots of the 100 approximation errors at each $t$  using ggplot2 for each $n$.I just finished this part according below codes.
+
+```{r repeat norm,echo=T}                  
+t=c(0.0,0.67, 0.84,1.28,1.65,2.32,2.58,3.09,3.72)
+x=pnorm(t, mean = 0, sd = 1)
+n1=100
+z=matrix(0,100,9)
+w=matrix(0,9,n1)
+for(p in 1:100)
+{ y=c(rnorm(n1,mean=0,sd=1))
+  for(k in 1:9)
+   {
+   for(j in 1:n1)
+   {w[k,j]=sign(y[j]<=t[k])}
+z[p,k]=sum(w[k,])/n1}}
+z=as.data.frame(z)
+e100_1=z$V1-x[1]
+e100_2=z$V2-x[2]
+e100_3=z$V3-x[3]
+e100_4=z$V4-x[4]
+e100_5=z$V5-x[5]
+e100_6=z$V6-x[6]
+e100_7=z$V7-x[7]
+e100_8=z$V8-x[8]
+e100_9=z$V9-x[9]
+
+t=c(0.0,0.67, 0.84,1.28,1.65,2.32,2.58,3.09,3.72)
+x=pnorm(t, mean = 0, sd = 1)
+n2=10^3
+z=matrix(0,100,9)
+w=matrix(0,9,n2)
+for(p in 1:100)
+{ y=c(rnorm(n2,mean=0,sd=1))
+  for(k in 1:9)
+  {
+   for(j in 1:n2)
+  {w[k,j]=sign(y[j]<=t[k])}
+z[p,k]=sum(w[k,])/n2}}
+z=as.data.frame(z)
+e1000_1=z$V1-x[1]
+e1000_2=z$V2-x[2]
+e1000_3=z$V3-x[3]
+e1000_4=z$V4-x[4]
+e1000_5=z$V5-x[5]
+e1000_6=z$V6-x[6]
+e1000_7=z$V7-x[7]
+e1000_8=z$V8-x[8]
+e1000_9=z$V9-x[9]
+
+t=c(0.0,0.67, 0.84,1.28,1.65,2.32,2.58,3.09,3.72)
+x=pnorm(t, mean = 0, sd = 1)
+n3=10000
+z=matrix(0,100,9)
+w=matrix(0,9,n3)
+for(p in 1:100)
+{ y=c(rnorm(n3,mean=0,sd=1))
+  for(k in 1:9)
+   {
+   for(j in 1:n3)
+   {w[k,j]=sign(y[j]<=t[k])}
+z[p,k]=sum(w[k,])/n3}}
+z=as.data.frame(z)
+e10000_1=z$V1-x[1]
+e10000_2=z$V2-x[2]
+e10000_3=z$V3-x[3]
+e10000_4=z$V4-x[4]
+e10000_5=z$V5-x[5]
+e10000_6=z$V6-x[6]
+e10000_7=z$V7-x[7]
+e10000_8=z$V8-x[8]
+e10000_9=z$V9-x[9]
+
+plot_data=cbind.data.frame(e100_1,e100_2,e100_3,e100_4,e100_5,e100_6,e100_7,e100_8,e100_9,e1000_1,e1000_2,e1000_3,e1000_4,e1000_5,e1000_6,e1000_7,e1000_8,e1000_9,e10000_1,e10000_2,e10000_3,e10000_4,e10000_5,e10000_6,e10000_7,e10000_8,e10000_9)
+```
+
+```{r draw box plots,echo=T }
+library(ggplot2)
+library(lattice)
+library(plyr)
+library(Rmisc)
+plot1<-ggplot(data=plot_data,aes(y=e100_1,x="0-100"))+geom_boxplot()+
+    labs(title="Boxplot of error at t=0, n=100",y="error",
+         x=NULL)
+plot1
+
+plot2<-ggplot(data=plot_data,aes(y=e100_2,x="0.67-100"))+geom_boxplot()+
+    labs(title="Boxplot of error at t=0.67, n=100",y="error",
+         x=NULL)
+plot2
+
+plot3<-ggplot(data=plot_data,aes(y=e100_3,x="0.84-100"))+geom_boxplot()+
+    labs(title="Boxplot of error at t=0.84, n=100",y="error",
+         x=NULL)
+plot3
+
+plot4<-ggplot(data=plot_data,aes(y=e100_4,x="1.28-100"))+geom_boxplot()+
+    labs(title="Boxplot of error at t=1.28, n=100",y="error",
+         x=NULL)
+plot4
+
+plot5<-ggplot(data=plot_data,aes(y=e100_5,x="1.65-100"))+geom_boxplot()+
+    labs(title="Boxplot of error at t=1.65, n=100",y="error",
+         x=NULL)
+plot5
+
+plot6<-ggplot(data=plot_data,aes(y=e100_6,x="2.32-100"))+geom_boxplot()+
+    labs(title="Boxplot of error at t=2.32, n=100",y="error",
+         x=NULL)
+plot6
+
+plot7<-ggplot(data=plot_data,aes(y=e100_7,x="2.58-100"))+geom_boxplot()+
+    labs(title="Boxplot of error at t=2.58, n=100",y="error",
+         x=NULL)
+plot7
+
+plot8<-ggplot(data=plot_data,aes(y=e100_8,x="3.09-100"))+geom_boxplot()+
+    labs(title="Boxplot of error at t=3.09, n=100",y="error",
+         x=NULL)
+plot8
+
+plot9<-ggplot(data=plot_data,aes(y=e100_9,x="3.72-100"))+geom_boxplot()+
+    labs(title="Boxplot of error at t=3.72, n=100",y="error",
+         x=NULL)
+plot9
+
+```
+
+# 4 Conclusions
+
+   In a word,I inputted two formulars and created a table to describe the difference between approximation and true value.In addition,I drew box plots of the 100 approximation errors at each $t$  using ggplot2 for each $n$.And I found the error is decreasing as the number of samples become larger.Anyway,In this homework,I received a lot of knowledge and I will make persistent efforts.
